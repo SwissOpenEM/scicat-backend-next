@@ -1,10 +1,8 @@
-import {
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
+import { GqlExecutionContext } from "@nestjs/graphql";
+import { Request } from "express";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {
@@ -13,11 +11,15 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   }
 
   getRequest(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest();
-    const token = request.query.access_token;
-    if (!request.headers.authorization && token) {
-      request.headers.authorization = token;
+    // Check if the request is in the GraphQL context
+
+    if (this.isGraphQLContext(context)) {
+      const ctx = GqlExecutionContext.create(context);
+      return ctx.getContext().req;
     }
+    // Handle REST context
+    const request = context.switchToHttp().getRequest();
+    this.attachAccessTokenFromQuery(request);
 
     return request;
   }
@@ -42,5 +44,18 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     // }
     // throw new UnauthorizedException();
     return null;
+  }
+
+  private isGraphQLContext(context: ExecutionContext): boolean {
+    const contextType = context.getType();
+
+    return (contextType as string) === "graphql";
+  }
+
+  private attachAccessTokenFromQuery(request: Request) {
+    const token = request.query?.access_token;
+    if (!request.headers.authorization && token) {
+      request.headers.authorization = `Bearer ${token}`;
+    }
   }
 }

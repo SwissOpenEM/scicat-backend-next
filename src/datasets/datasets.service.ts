@@ -59,11 +59,15 @@ export class DatasetsService {
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
-    const username = (this.request.user as JWTUser).username;
+    const username = (this.request as any).user
+      ? (this.request as any).user.username
+      : (this.request as any).req.user.username;
+
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
       addCreatedByFields(createDatasetDto, username),
     );
+
     if (this.ESClient) {
       await this.ESClient.updateInsertDocument(
         createdDataset.toObject() as DatasetDocument,

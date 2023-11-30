@@ -9,7 +9,7 @@ import { map, Observable } from "rxjs";
 import { convertToRequestedUnit } from "src/common/utils";
 import { IDatasetFields } from "../interfaces/dataset-filters.interface";
 import { DatasetClass } from "../schemas/dataset.schema";
-
+import { GqlExecutionContext } from "@nestjs/graphql";
 @Injectable()
 export class FullQueryInterceptor implements NestInterceptor {
   intercept(
@@ -18,7 +18,11 @@ export class FullQueryInterceptor implements NestInterceptor {
   ): Observable<unknown> | Promise<Observable<unknown>> {
     return next.handle().pipe(
       map((data: DatasetClass[]) => {
-        const req = context.switchToHttp().getRequest();
+        const isGraphQLContext = (context.getType() as string) === "graphql";
+        const req = isGraphQLContext
+          ? GqlExecutionContext.create(context).getContext().req
+          : context.switchToHttp().getRequest();
+
         const fields: IDatasetFields = req.query.fields
           ? JSON.parse(req.query.fields)
           : {};

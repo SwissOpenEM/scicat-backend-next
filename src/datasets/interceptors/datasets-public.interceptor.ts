@@ -5,6 +5,7 @@ import {
   NestInterceptor,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
+import { GqlExecutionContext } from "@nestjs/graphql";
 
 @Injectable()
 export class MainDatasetsPublicInterceptor implements NestInterceptor {
@@ -27,7 +28,11 @@ export class MainDatasetsPublicInterceptor implements NestInterceptor {
 @Injectable()
 export class SubDatasetsPublicInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const request = context.switchToHttp().getRequest();
+    const isGraphQLContext = (context.getType() as string) === "graphql";
+    const request = isGraphQLContext
+      ? GqlExecutionContext.create(context).getContext().req
+      : context.switchToHttp().getRequest();
+
     if (!request.isAuthenticated()) {
       const stringFields = request.query.fields ? request.query.fields : "{}";
       let jsonFields = JSON.parse(stringFields);

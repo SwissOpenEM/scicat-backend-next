@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { appendSIUnitToPhysicalQuantity } from "../utils";
+import { GqlExecutionContext } from "@nestjs/graphql";
 
 @Injectable()
 export class FormatPhysicalQuantitiesInterceptor<T> implements NestInterceptor {
@@ -19,7 +20,10 @@ export class FormatPhysicalQuantitiesInterceptor<T> implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<unknown> | Promise<Observable<unknown>> {
-    const req = context.switchToHttp().getRequest();
+    const isGraphQLContext = (context.getType() as string) === "graphql";
+    const req = isGraphQLContext
+      ? GqlExecutionContext.create(context).getContext().req
+      : context.switchToHttp().getRequest();
     const instance: unknown = (req.body as T)[this.propName];
 
     if (req.body[this.propName]) {
