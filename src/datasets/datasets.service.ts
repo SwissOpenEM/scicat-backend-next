@@ -59,9 +59,9 @@ export class DatasetsService {
   }
 
   async create(createDatasetDto: CreateDatasetDto): Promise<DatasetDocument> {
-    const username = (this.request as any).user
-      ? (this.request as any).user.username
-      : (this.request as any).req.user.username;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const req = this.request as any;
+    const username = req.user.username ?? req.req.user.username;
 
     const createdDataset = new this.datasetModel(
       // insert created and updated fields
