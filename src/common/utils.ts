@@ -11,6 +11,7 @@ import {
   IScientificFilter,
 } from "./interfaces/common.interface";
 import { ScientificRelation } from "./scientific-relation.enum";
+import { inspect } from "util";
 
 export const convertToSI = (
   inputValue: number,
@@ -192,7 +193,7 @@ export const handleAxiosRequestError = (
     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
     // http.ClientRequest in node.js
     console.error(error.request);
-    Logger.error({ request: error.request }, context);
+    Logger.error({ request: inspect(error.request) }, context);
   } else {
     // Something happened in setting up the request that triggered an Error
     Logger.error("Error: " + error.message, context);
