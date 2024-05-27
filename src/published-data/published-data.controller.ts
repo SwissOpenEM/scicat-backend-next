@@ -441,49 +441,13 @@ export class PublishedDataController {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { _id, doi, ...publishedData } = data;
 
-    const OAIServerUri = this.configService.get<string>("oaiProviderRoute");
-
-    let doiProviderCredentials = {
-      username: "removed",
-      password: "removed",
-    };
-
-    if (existsSync(this.doiConfigPath)) {
-      doiProviderCredentials = JSON.parse(
-        readFileSync(this.doiConfigPath).toString(),
-      );
-    }
-
-    const resyncOAIPublication = {
-      method: "PUT",
-      body: publishedData,
-      json: true,
-      uri: OAIServerUri + "/" + encodeURIComponent(encodeURIComponent(id)),
-      headers: {
-        "content-type": "application/json;charset=UTF-8",
-      },
-      auth: doiProviderCredentials,
-    };
-
-    let res;
-    try {
-      res = await firstValueFrom(
-        this.httpService.request({
-          ...resyncOAIPublication,
-          method: "PUT",
-        }),
-      );
-    } catch (error) {
-      handleAxiosRequestError(error, "PublishedDataController.resync");
-    }
-
     try {
       await this.publishedDataService.update({ doi: id }, publishedData);
     } catch (error) {
       console.error(error);
     }
 
-    return res ? res.data : null;
+    return null;
   }
 }
 
