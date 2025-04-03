@@ -174,6 +174,7 @@ const configuration = () => {
     doiPrefix: process.env.DOI_PREFIX,
     expressSessionSecret: process.env.EXPRESS_SESSION_SECRET,
     functionalAccounts: [],
+    ethzArchiverBasicAuthToken: process.env.ETHZ_ARCHIVER_BASIC_AUTH_TOKEN ?? "testtoken",
     httpMaxRedirects: process.env.HTTP_MAX_REDIRECTS ?? 5,
     httpTimeOut: process.env.HTTP_TIMEOUT ?? 5000,
     jwt: {
