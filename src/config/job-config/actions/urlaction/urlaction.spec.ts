@@ -8,11 +8,15 @@ describe("URLJobAction", () => {
     actionType: "url",
     url: "http://localhost:3000/api/v3/health?jobid={{id}}",
     method: "GET",
-    headers: { accept: "application/json" },
+    headers: {
+      accept: "application/json",
+      Authorization: "Bearer {{@authToken}}",
+    },
     body: "This is the body.",
   };
 
-  const action = new URLJobAction<CreateJobDto>(config);
+  const authorizationToken = "TheAuthToken";
+  const action = new URLJobAction<CreateJobDto>(config, authorizationToken);
 
   beforeEach(() => {
     global.fetch = jest.fn();
@@ -40,7 +44,10 @@ describe("URLJobAction", () => {
       "http://localhost:3000/api/v3/health?jobid=12345",
       {
         method: "GET",
-        headers: { accept: "application/json" },
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer TheAuthToken",
+        },
         body: "This is the body.",
       },
     );
@@ -62,7 +69,10 @@ describe("URLJobAction", () => {
       "http://localhost:3000/api/v3/health?jobid=12345",
       {
         method: "GET",
-        headers: { accept: "application/json" },
+        headers: {
+          accept: "application/json",
+          Authorization: "Bearer TheAuthToken",
+        },
         body: "This is the body.",
       },
     );
