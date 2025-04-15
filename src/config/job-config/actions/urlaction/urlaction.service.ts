@@ -6,15 +6,20 @@ import {
 } from "../../jobconfig.interface";
 import { URLJobAction } from "./urlaction";
 import { isURLJobActionOptions } from "./urlaction.interface";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class URLJobActionCreator implements JobActionCreator<JobDto> {
-  constructor() {}
+  private readonly configService: ConfigService;
+  constructor(configService: ConfigService) {
+    this.configService = configService;
+  }
 
   public create<Options extends JobActionOptions>(options: Options) {
     if (!isURLJobActionOptions(options)) {
       throw new Error("Invalid options for URLJobAction.");
     }
-    return new URLJobAction(options);
+    const token = this.configService.get<string>(options.authTokenEnvVar || "");
+    return new URLJobAction(options, token || "");
   }
 }

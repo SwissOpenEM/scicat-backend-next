@@ -3,7 +3,6 @@ import { JobAction, JobDto } from "../../jobconfig.interface";
 import { JobClass } from "../../../../jobs/schemas/job.schema";
 import { compileJob, TemplateJob } from "../../handlebar-utils";
 import { actionType, URLJobActionOptions } from "./urlaction.interface";
-
 /**
  * Respond to Job events by making an HTTP call.
  */
@@ -12,6 +11,7 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
   private method = "GET";
   private headerTemplates?: Record<string, TemplateJob> = {};
   private bodyTemplate?: TemplateJob;
+  private authorizationToken?: string;
 
   getActionType(): string {
     return actionType;
@@ -21,16 +21,22 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
     const url = encodeURI(this.urlTemplate(job));
     Logger.log(`(Job ${job.id}) Requesting ${url}`, "URLAction");
 
+    const headers = this.headerTemplates
+      ? Object.fromEntries(
+          Object.entries(this.headerTemplates).map(([key, template]) => [
+            key,
+            template(job, {
+              data: {
+                authToken: this.authorizationToken,
+              },
+            }),
+          ]),
+        )
+      : undefined;
+
     const response = await fetch(url, {
       method: this.method,
-      headers: this.headerTemplates
-        ? Object.fromEntries(
-            Object.entries(this.headerTemplates).map(([key, template]) => [
-              key,
-              template(job),
-            ]),
-          )
-        : undefined,
+      headers: headers,
       body: this.bodyTemplate ? this.bodyTemplate(job) : undefined,
     });
 
@@ -63,8 +69,10 @@ export class URLJobAction<T extends JobDto> implements JobAction<T> {
    * @throws {NotFoundException} If the 'url' parameter is not provided in the data object
    */
 
-  constructor(options: URLJobActionOptions) {
+  constructor(options: URLJobActionOptions, token: string) {
     this.urlTemplate = compileJob(options.url);
+
+    this.authorizationToken = token;
 
     if (options["method"]) {
       this.method = options.method;
