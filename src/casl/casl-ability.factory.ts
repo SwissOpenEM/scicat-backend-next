@@ -1926,12 +1926,37 @@ export class CaslAbilityFactory {
 
   jobsMongoQueryReadAccess(user: JWTUser) {
     const abilities = this.jobsAccess(user);
-    return {
-      $or: [
-        accessibleBy(abilities, Action.JobReadAny).ofType(JobClass),
-        accessibleBy(abilities, Action.JobReadAccess).ofType(JobClass),
-      ],
-    };
+
+    const queries = [
+      accessibleBy(abilities, Action.JobReadAny).ofType(JobClass),
+      accessibleBy(abilities, Action.JobReadAccess).ofType(JobClass),
+    ];
+
+    // Remove impossible queries
+    const meaningfulQueries = queries.filter(
+      (q) =>
+        JSON.stringify(q) !==
+        JSON.stringify({
+          $expr: { $eq: [0, 1] },
+        }),
+    );
+
+    // If any query is unrestricted access, return {}
+    if (meaningfulQueries.some((q) => Object.keys(q).length === 0)) {
+      return {};
+    }
+
+    // No access at all
+    if (meaningfulQueries.length === 0) {
+      return { $expr: { $eq: [0, 1] } };
+    }
+
+    // Single condition doesn't need $or
+    if (meaningfulQueries.length === 1) {
+      return meaningfulQueries[0];
+    }
+
+    return { $or: meaningfulQueries };
   }
 
   proposalsInstanceAccess(user: JWTUser) {
