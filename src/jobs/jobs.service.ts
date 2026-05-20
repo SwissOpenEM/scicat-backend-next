@@ -161,6 +161,8 @@ export class JobsService {
     if (!isEmpty(limits.sort)) {
       const sort = parsePipelineSort(limits.sort);
       pipeline.push({ $sort: sort });
+    } else {
+      pipeline.push({ $sort: { createdAt: 1 } });
     }
     if (limits?.limit) pipeline.push({ $limit: limits.limit });
     if (limits?.skip) pipeline.push({ $skip: limits.skip });

@@ -1924,6 +1924,21 @@ export class CaslAbilityFactory {
     });
   }
 
+  isImpossibleQuery(q: Record<string, unknown>): boolean {
+    const expr = q.$expr as { $eq?: unknown } | undefined;
+    const eq = expr?.$eq;
+
+    return (
+      Array.isArray(eq) && eq.length === 2 && eq.includes(0) && eq.includes(1)
+    );
+  }
+
+  isEmptyObject(q: unknown): boolean {
+    return (q &&
+      typeof q === "object" &&
+      Object.keys(q).length === 0) as boolean;
+  }
+
   jobsMongoQueryReadAccess(user: JWTUser) {
     const abilities = this.jobsAccess(user);
 
@@ -1933,16 +1948,10 @@ export class CaslAbilityFactory {
     ];
 
     // Remove impossible queries
-    const meaningfulQueries = queries.filter(
-      (q) =>
-        JSON.stringify(q) !==
-        JSON.stringify({
-          $expr: { $eq: [0, 1] },
-        }),
-    );
+    const meaningfulQueries = queries.filter((q) => !this.isImpossibleQuery(q));
 
     // If any query is unrestricted access, return {}
-    if (meaningfulQueries.some((q) => Object.keys(q).length === 0)) {
+    if (meaningfulQueries.some((q) => this.isEmptyObject(q))) {
       return {};
     }
 
