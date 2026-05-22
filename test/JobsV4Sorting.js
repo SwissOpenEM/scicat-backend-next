@@ -25,7 +25,7 @@ describe("1175: Jobs retrieving with sorting", () => {
     });
 
     const dataset1 = {
-      ...TestData.RawCorrect,
+      ...TestData.RawCorrectV4,
       isPublished: true,
       ownerGroup: "group1",
       accessGroups: ["group5"],
@@ -36,7 +36,7 @@ describe("1175: Jobs retrieving with sorting", () => {
     };
 
     const dataset2 = {
-      ...TestData.RawCorrect,
+      ...TestData.RawCorrectV4,
       isPublished: false,
       ownerGroup: "group3",
       accessGroups: [],
@@ -47,7 +47,7 @@ describe("1175: Jobs retrieving with sorting", () => {
     };
 
     const dataset3 = {
-      ...TestData.RawCorrect,
+      ...TestData.RawCorrectV4,
       isPublished: false,
       ownerGroup: "group5",
       accessGroups: ["group1"],
@@ -57,6 +57,7 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
+    console.log(dataset1);
     await request(appUrl)
       .post("/api/v4/datasets")
       .send({
@@ -67,6 +68,7 @@ describe("1175: Jobs retrieving with sorting", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
+        console.log(res.body);
         datasetPid1 = res.body["pid"];
       });
 
@@ -180,7 +182,7 @@ describe("1175: Jobs retrieving with sorting", () => {
     await request(appUrl)
       .post("/api/v4/Jobs")
       .send({
-        type: "dataset_access",
+        type: "owner_access",
         ownerUser: "user5.1",
         ownerGroup: "group5",
         jobParams: {
@@ -215,14 +217,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
-    const values = res.body.map((j) => j.type);
-    const sorted = [...values].sort();
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.type);
+        const sorted = [...values].sort();
 
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0020: should sort jobs by type descending", async () => {
@@ -234,15 +240,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.type);
+        const sorted = [...values].sort().reverse();
 
-    const values = res.body.map((j) => j.type);
-    const sorted = [...values].sort().reverse();
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0030: should sort jobs by ownerUser ascending", async () => {
@@ -254,15 +263,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.ownerUser);
+        const sorted = [...values].sort();
 
-    const values = res.body.map((j) => j.ownerUser);
-    const sorted = [...values].sort();
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0040: should sort jobs by ownerUser descending", async () => {
@@ -274,15 +286,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.ownerUser);
+        const sorted = [...values].sort().reverse();
 
-    const values = res.body.map((j) => j.ownerUser);
-    const sorted = [...values].sort().reverse();
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0050: should sort jobs by statusCode ascending", async () => {
@@ -294,15 +309,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.statusCode);
+        const sorted = [...values].sort();
 
-    const values = res.body.map((j) => j.statusCode);
-    const sorted = [...values].sort();
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0060: should sort jobs by statusCode descending", async () => {
@@ -314,15 +332,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.ownerUser);
+        const sorted = [...values].sort().reverse();
 
-    const values = res.body.map((j) => j.statusCode);
-    const sorted = [...values].sort().reverse();
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0070: should sort jobs by createdAt ascending", async () => {
@@ -334,16 +355,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => new Date(j.createdAt).getTime());
+        const sorted = [...values].sort((a, b) => a - b);
 
-    const values = res.body.map((j) => new Date(j.createdAt).getTime());
-
-    const sorted = [...values].sort((a, b) => a - b);
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0080: should sort jobs by createdAt descending", async () => {
@@ -355,16 +378,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => new Date(j.createdAt).getTime());
+        const sorted = [...values].sort((a, b) => b - a);
 
-    const values = res.body.map((j) => new Date(j.createdAt).getTime());
-
-    const sorted = [...values].sort((a, b) => b - a);
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0090: should apply sorting together with limit", async () => {
@@ -388,12 +413,25 @@ describe("1175: Jobs retrieving with sorting", () => {
     const sorted = [...values].sort();
 
     expect(values).to.deep.equal(sorted);
+    return request(appUrl)
+      .get("/api/v4/Jobs")
+      .query({ filter: JSON.stringify(filter) })
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.type);
+        values.to.have.lengthOf.at.most(5);
+        const sorted = [...values].sort();
+
+        values.should.deep.equal(sorted);
+      });
   });
 
   it("0100: should apply sorting together with where filter", async () => {
     const filter = {
       where: {
-        type: "archive",
+        type: "data_access",
       },
       limits: {
         sort: {
@@ -402,18 +440,20 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    const res = await request(app)
+    return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
-      .expect(200);
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.SuccessfulGetStatusCode)
+      .then((res) => {
+        const values = res.body.map((j) => j.ownerGroup);
+        values.forEach((j) => {
+          expect(j.type).to.equal("archive");
+        });
+        const sorted = [...values].sort();
 
-    res.body.forEach((j) => {
-      expect(j.type).to.equal("archive");
-    });
-
-    const values = res.body.map((j) => j.ownerGroup);
-    const sorted = [...values].sort();
-
-    expect(values).to.deep.equal(sorted);
+        values.should.deep.equal(sorted);
+      });
   });
 });
