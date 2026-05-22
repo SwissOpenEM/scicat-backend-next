@@ -57,7 +57,6 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    console.log(dataset1);
     await request(appUrl)
       .post("/api/v4/datasets")
       .send({
@@ -68,7 +67,6 @@ describe("1175: Jobs retrieving with sorting", () => {
       .expect(TestData.EntryCreatedStatusCode)
       .expect("Content-Type", /json/)
       .then((res) => {
-        console.log(res.body);
         datasetPid1 = res.body["pid"];
       });
 
@@ -188,7 +186,7 @@ describe("1175: Jobs retrieving with sorting", () => {
       })
       .set("Accept", "application/json")
       .auth(accessTokenAdmin, { type: "bearer" })
-      .expect(TestData.EntryCreatedStatusCode)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
 
     await request(appUrl)
@@ -222,9 +220,8 @@ describe("1175: Jobs retrieving with sorting", () => {
       })
       .set("Accept", "application/json")
       .auth(accessTokenAdmin, { type: "bearer" })
-      .expect(TestData.EntryCreatedStatusCode)
+      .expect(TestData.SuccessfulPatchStatusCode)
       .expect("Content-Type", /json/);
-
   });
 
   after(() => {
@@ -427,7 +424,6 @@ describe("1175: Jobs retrieving with sorting", () => {
       },
     };
 
-    expect(values).to.deep.equal(sorted);
     return request(appUrl)
       .get("/api/v4/Jobs")
       .query({ filter: JSON.stringify(filter) })
@@ -436,7 +432,7 @@ describe("1175: Jobs retrieving with sorting", () => {
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
         const values = res.body.map((j) => j.type);
-        values.to.have.lengthOf.at.most(5);
+        values.should.have.lengthOf.at.most(5);
         const sorted = [...values].sort();
 
         values.should.deep.equal(sorted);
