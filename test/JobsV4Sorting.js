@@ -24,6 +24,39 @@ describe("1175: Jobs retrieving with sorting", () => {
       password: TestData.Accounts["admin"]["password"],
     });
 
+    const dataset1 = {
+      ...TestData.RawCorrect,
+      isPublished: true,
+      ownerGroup: "group1",
+      accessGroups: ["group5"],
+      datasetlifecycle: {
+        archivable: true,
+        retrievable: false,
+      },
+    };
+
+    const dataset2 = {
+      ...TestData.RawCorrect,
+      isPublished: false,
+      ownerGroup: "group3",
+      accessGroups: [],
+      datasetlifecycle: {
+        archivable: true,
+        retrievable: true,
+      },
+    };
+
+    const dataset3 = {
+      ...TestData.RawCorrect,
+      isPublished: false,
+      ownerGroup: "group5",
+      accessGroups: ["group1"],
+      datasetlifecycle: {
+        archivable: true,
+        retrievable: true,
+      },
+    };
+
     await request(appUrl)
       .post("/api/v4/datasets")
       .send({
