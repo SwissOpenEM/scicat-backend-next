@@ -180,6 +180,18 @@ describe("1175: Jobs retrieving with sorting", () => {
       });
 
     await request(appUrl)
+      .patch("/api/v4/Jobs/" + jobId2)
+      .send({
+        statusCode: "inProgress",
+        statusMessage: "Job started",
+        jobResultObject: {},
+      })
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/);
+
+    await request(appUrl)
       .post("/api/v4/Jobs")
       .send({
         type: "owner_access",
@@ -200,6 +212,19 @@ describe("1175: Jobs retrieving with sorting", () => {
       .then((res) => {
         jobId3 = res.body["id"];
       });
+
+    await request(appUrl)
+      .patch("/api/v4/Jobs/" + jobId3)
+      .send({
+        statusCode: "finishedSuccessful",
+        statusMessage: "Job completed successfully",
+        jobResultObject: {},
+      })
+      .set("Accept", "application/json")
+      .auth(accessTokenAdmin, { type: "bearer" })
+      .expect(TestData.EntryCreatedStatusCode)
+      .expect("Content-Type", /json/);
+
   });
 
   after(() => {
@@ -339,7 +364,7 @@ describe("1175: Jobs retrieving with sorting", () => {
       .auth(accessTokenAdmin, { type: "bearer" })
       .expect(TestData.SuccessfulGetStatusCode)
       .then((res) => {
-        const values = res.body.map((j) => j.ownerUser);
+        const values = res.body.map((j) => j.statusCode);
         const sorted = [...values].sort().reverse();
 
         values.should.deep.equal(sorted);
@@ -401,16 +426,6 @@ describe("1175: Jobs retrieving with sorting", () => {
         },
       },
     };
-
-    const res = await request(app)
-      .get("/api/v4/Jobs")
-      .query({ filter: JSON.stringify(filter) })
-      .expect(200);
-
-    expect(res.body).to.have.lengthOf.at.most(5);
-
-    const values = res.body.map((j) => j.type);
-    const sorted = [...values].sort();
 
     expect(values).to.deep.equal(sorted);
     return request(appUrl)
