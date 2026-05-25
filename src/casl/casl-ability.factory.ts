@@ -1947,14 +1947,48 @@ export class CaslAbilityFactory {
     });
   }
 
+  isImpossibleQuery(q: Record<string, unknown>): boolean {
+    const expr = q.$expr as { $eq?: unknown } | undefined;
+    const eq = expr?.$eq;
+
+    return (
+      Array.isArray(eq) && eq.length === 2 && eq.includes(0) && eq.includes(1)
+    );
+  }
+
+  isEmptyObject(q: unknown): boolean {
+    return (q &&
+      typeof q === "object" &&
+      Object.keys(q).length === 0) as boolean;
+  }
+
   jobsMongoQueryReadAccess(user: JWTUser) {
     const abilities = this.jobsAccess(user);
-    return {
-      $or: [
-        accessibleBy(abilities, Action.JobReadAny).ofType(JobClass),
-        accessibleBy(abilities, Action.JobReadAccess).ofType(JobClass),
-      ],
-    };
+
+    const queries = [
+      accessibleBy(abilities, Action.JobReadAny).ofType(JobClass),
+      accessibleBy(abilities, Action.JobReadAccess).ofType(JobClass),
+    ];
+
+    // Remove impossible queries
+    const meaningfulQueries = queries.filter((q) => !this.isImpossibleQuery(q));
+
+    // If any query is unrestricted access, return {}
+    if (meaningfulQueries.some((q) => this.isEmptyObject(q))) {
+      return {};
+    }
+
+    // No access at all
+    if (meaningfulQueries.length === 0) {
+      return { $expr: { $eq: [0, 1] } };
+    }
+
+    // Single condition doesn't need $or
+    if (meaningfulQueries.length === 1) {
+      return meaningfulQueries[0];
+    }
+
+    return { $or: meaningfulQueries };
   }
 
   proposalsInstanceAccess(user: JWTUser) {
