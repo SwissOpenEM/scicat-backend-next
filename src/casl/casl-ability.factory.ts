@@ -1962,14 +1962,14 @@ export class CaslAbilityFactory {
       (q) => !this.isAlwaysFalseQuery(q),
     );
 
-    // If any query provides unrestricted access, 
+    // If any query provides unrestricted access,
     // which is coded as an empty object( {} ),
     // it just returns {}
     if (meaningfulQueries.some((q) => this.isEmptyObject(q))) {
       return {};
     }
 
-    // No access at all: 
+    // No access at all:
     // return the expressions provided by accessibleBy() casl function
     if (meaningfulQueries.length === 0) {
       return { $expr: { $eq: [0, 1] } };
